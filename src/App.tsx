@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { AnswerObject, Difficulty, QuestionsState } from "./lib/types";
 import { fetchQuizQuestions } from "./lib/utils";
-import { Button } from "./components/ui/button";
 import QuestionCard from "./components/question-card";
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
-
-const TOTAL_QUESTIONS = 10;
+import PreferencesForm from "./components/preferences-form";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -13,15 +11,16 @@ function App() {
   const [number, setNumber] = useState(0);
   const [userAnswers, setUserAnswers] = useState<AnswerObject[]>([]);
   const [score, setScore] = useState(0);
-  const [gameOver, setGameOver] = useState<'new' | boolean>('new');
+  const [gameOver, setGameOver] = useState<"new" | boolean>("new");
 
-  async function startTrivia() {
+  async function startTrivia(
+    total: number,
+    category: string,
+    difficulty: `${Difficulty}`
+  ) {
     setLoading(true);
     setGameOver(false);
-    const newQuestions = await fetchQuizQuestions(
-      TOTAL_QUESTIONS,
-      Difficulty.EASY
-    );
+    const newQuestions = await fetchQuizQuestions(total, difficulty, category);
     setQuestions(newQuestions);
     setScore(0);
     setUserAnswers([]);
@@ -45,7 +44,7 @@ function App() {
 
   function nextQuestion() {
     const nextQuestion = number + 1;
-    if (nextQuestion === TOTAL_QUESTIONS) {
+    if (nextQuestion === questions.length) {
       setGameOver(true);
     } else {
       setNumber(nextQuestion);
@@ -59,24 +58,27 @@ function App() {
           <CardTitle>Todo App</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          {gameOver || userAnswers.length === TOTAL_QUESTIONS ? (
+          {gameOver || userAnswers.length === questions.length ? (
             <div className="flex justify-center flex-col items-center gap-2">
-							<Button onClick={startTrivia}>
-							{gameOver === "new" ? "Start Trivia" : "Play Again"}
-						</Button>
-						{gameOver === true && (
-							<p className="text-center">
-								You answered {score}/{TOTAL_QUESTIONS} questions correctly.
-							</p>
-						)}
-						</div>
-          ) : loading ? <p>Loading questions...</p> : (
+              <PreferencesForm
+                startTrivia={startTrivia}
+                buttonLabel={gameOver === "new" ? "Start Trivia" : "Play Again"}
+              />
+              {gameOver === true && (
+                <p className="text-center">
+                  You answered {score}/{questions.length} questions correctly.
+                </p>
+              )}
+            </div>
+          ) : loading ? (
+            <p>Loading questions...</p>
+          ) : (
             <div className="space-y-2">
               <div className="flex justify-between">
                 {!gameOver && <p>Score: {score}</p>}
                 {!gameOver && (
                   <p>
-                    Question: {number + 1} / {TOTAL_QUESTIONS}
+                    Question: {number + 1} / {questions.length}
                   </p>
                 )}
               </div>
@@ -86,10 +88,9 @@ function App() {
                   answers={questions[number].answers}
                   callback={checkAnswer}
                   question={questions[number].question}
-									nextQuestion={nextQuestion}
+                  nextQuestion={nextQuestion}
                 />
               )}
-              
             </div>
           )}
         </CardContent>

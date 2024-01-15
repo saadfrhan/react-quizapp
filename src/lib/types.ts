@@ -28,3 +28,8 @@ export interface QuestionCardProps {
   callback: (answer: string) => void;
 	nextQuestion: () => void;
 }
+
+export interface Categories {
+  id: number;
+  name: string;
+}
