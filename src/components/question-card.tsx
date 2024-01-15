@@ -25,7 +25,7 @@ export default function QuestionCard({
         ))}
 				</RadioGroup>
       </div>
-			<Button onClick={() => {
+			<Button className="w-full" onClick={() => {
 				callback(selectedAnswer);
 				nextQuestion();
 			setSelectedAnswer('');
