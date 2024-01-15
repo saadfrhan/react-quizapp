@@ -60,15 +60,15 @@ function App() {
         <CardContent className="flex flex-col gap-2">
           {gameOver || userAnswers.length === questions.length ? (
             <div className="flex justify-center flex-col items-center gap-2">
+							{gameOver === true && (
+								<p className="text-center">
+									You answered {score}/{questions.length} questions correctly.
+								</p>
+							)}
               <PreferencesForm
                 startTrivia={startTrivia}
                 buttonLabel={gameOver === "new" ? "Start Trivia" : "Play Again"}
               />
-              {gameOver === true && (
-                <p className="text-center">
-                  You answered {score}/{questions.length} questions correctly.
-                </p>
-              )}
             </div>
           ) : loading ? (
             <p>Loading questions...</p>
