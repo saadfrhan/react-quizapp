@@ -5,31 +5,33 @@ import QuestionCard from "./components/question-card";
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import PreferencesForm from "./components/preferences-form";
 
+type GameState = "new" | "playing" | "over";
+
 function App() {
-  const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState<QuestionsState[]>([]);
   const [number, setNumber] = useState(0);
   const [userAnswers, setUserAnswers] = useState<AnswerObject[]>([]);
   const [score, setScore] = useState(0);
-  const [gameOver, setGameOver] = useState<"new" | boolean>("new");
+  const [gameState, setGameState] = useState<GameState>("new");
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
 
   async function startTrivia(
     total: number,
     category: string,
     difficulty: `${Difficulty}`
   ) {
-    setLoading(true);
-    setGameOver(false);
+    setIsLoadingQuestions(true);
     const newQuestions = await fetchQuizQuestions(total, difficulty, category);
     setQuestions(newQuestions);
     setScore(0);
     setUserAnswers([]);
     setNumber(0);
-    setLoading(false);
+    setGameState("playing");
+    setIsLoadingQuestions(false);
   }
 
   async function checkAnswer(answer: string) {
-    if (!gameOver) {
+    if (gameState === "playing") {
       const correct = questions[number].correct_answer === answer;
       if (correct) setScore((prev) => prev + 1);
       const answerObject = {
@@ -45,45 +47,62 @@ function App() {
   function nextQuestion() {
     const nextQuestion = number + 1;
     if (nextQuestion === questions.length) {
-      setGameOver(true);
+      setGameState("over");
     } else {
       setNumber(nextQuestion);
     }
   }
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center h-screen bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
       <Card className="w-[600px]">
         <CardHeader>
-          <CardTitle>Todo App</CardTitle>
+          <CardTitle className="text-3xl text-blue-600 font-semibold">
+            Quiz App
+          </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          {gameOver || userAnswers.length === questions.length ? (
+        <CardContent className="flex flex-col gap-2 text-lg">
+          {gameState !== "playing" ||
+          userAnswers.length === questions.length ? (
             <div className="flex justify-center flex-col items-center gap-2">
-							{gameOver === true && (
-								<p className="text-center">
-									You answered {score}/{questions.length} questions correctly.
-								</p>
-							)}
+              {gameState === "over" && (
+                <p className="text-center text-2xl text-green-600">
+                  You answered {score}/{questions.length} questions correctly.
+                </p>
+              )}
               <PreferencesForm
                 startTrivia={startTrivia}
-                buttonLabel={gameOver === "new" ? "Start Trivia" : "Play Again"}
+                buttonLabel={
+                  gameState === "new"
+                    ? "Start Trivia"
+                    : isLoadingQuestions
+                    ? "Loading..."
+                    : "Play Again"
+                }
               />
             </div>
-          ) : loading ? (
-            <p>Loading questions...</p>
+          ) : isLoadingQuestions ? (
+            <p className="text-center text-2xl text-red-600">
+              Loading questions...
+            </p>
           ) : (
             <div className="space-y-2">
               <div className="flex justify-between">
-                {!gameOver && <p>Score: {score}</p>}
-                {!gameOver && (
-                  <p>
+                {gameState === "playing" && (
+                  <p className="text-xl text-gray-700">Score: {score}</p>
+                )}
+                {gameState === "playing" && (
+                  <p className="text-xl text-gray-700">
                     Question: {number + 1} / {questions.length}
                   </p>
                 )}
               </div>
-              {loading && <p>Loading Questions...</p>}
-              {!loading && !gameOver && (
+              {isLoadingQuestions && (
+                <p className="text-center text-2xl text-red-600">
+                  Loading Questions...
+                </p>
+              )}
+              {gameState === "playing" && (
                 <QuestionCard
                   answers={questions[number].answers}
                   callback={checkAnswer}

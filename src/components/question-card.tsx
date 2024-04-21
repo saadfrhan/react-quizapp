@@ -14,7 +14,10 @@ export default function QuestionCard({
 
   return (
     <div className="space-y-2">
-      <p dangerouslySetInnerHTML={{ __html: question }} />
+      <p
+        className="text-2xl text-blue-600 font-semibold"
+        dangerouslySetInnerHTML={{ __html: question }}
+      />
       <div className="flex flex-col gap-2">
         <RadioGroup>
           {answers.map((answer, index) => (
@@ -24,13 +27,15 @@ export default function QuestionCard({
                 value={answer}
                 id={answer}
               />
-              <Label htmlFor={answer}>{answer}</Label>
+              <Label htmlFor={answer} className="text-lg text-gray-700">
+                {answer}
+              </Label>
             </div>
           ))}
         </RadioGroup>
       </div>
       <Button
-        className="w-full"
+        className="w-full text-lg bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         onClick={() => {
           callback(selectedAnswer);
           nextQuestion();
